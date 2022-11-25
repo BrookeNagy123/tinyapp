@@ -1,3 +1,4 @@
+const { text } = require("express");
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -51,6 +52,13 @@ app.get("/u/:id", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
+  res.redirect("/urls"); 
+});
+
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id
+  const longURL = req.body.url
+  urlDatabase[id] = longURL
   res.redirect("/urls"); 
 });
 
