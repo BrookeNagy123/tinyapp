@@ -16,18 +16,20 @@
       <div.a class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <% if(!users.userID.id) { %>
+        <a class="nav-item nav-link" href="/login">Login</a>
+        <% } %>
+        <a class="nav-item nav-link" href="/register">Register</a>
       </div.a>
     </div.a>
     <div.b class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div.b class="navbar-nav">
         <div.b class=text-align:right>
         <form method="POST" action="/logout">
-             <h6>Email: <%= users.userID.email %></h6> 
-              <button type="submit">Sign Out</button>  
-            </form>    
-          <form method="POST" action="/login">
-            <input id ="email" name ="email" type ="email" value = "Email">
-            <button type="submit">Sign In</button>
+             <a>Email: <%= users.userID.email %></a> 
+             <% if(users.userID.id) { %> 
+             <button type="submit">Sign Out</button>  
+             <% } %>  
         </form>
       </div.b>
     </div.b>
