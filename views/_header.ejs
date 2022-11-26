@@ -12,11 +12,27 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
+    <div.a class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div.a class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-      </div>
-    </div>
+      </div.a>
+    </div.a>
+    <div.b class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div.b class="navbar-nav">
+        <div.b class=text-align:right>
+        <form
+          <% if(username){ %>
+             method="POST" action="/logout">
+             <h6>Username: <%= username %> </h6> 
+              <button type="submit">Sign Out</button>  
+          <% } else{ %>  
+             method="POST" action="/login">
+            <input id ="username" name ="username" type ="text" value = "Username">
+            <button type="submit">Sign In</button>
+         <% } %>
+        </form>
+      </div.b>
+    </div.b>
   </nav>
 </header>
