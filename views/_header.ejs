@@ -21,16 +21,13 @@
     <div.b class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div.b class="navbar-nav">
         <div.b class=text-align:right>
-        <form
-          <% if(username){ %>
-             method="POST" action="/logout">
-             <h6>Username: <%= username %> </h6> 
+        <form method="POST" action="/logout">
+             <h6>Email: <%= users.userID.email %></h6> 
               <button type="submit">Sign Out</button>  
-          <% } else{ %>  
-             method="POST" action="/login">
-            <input id ="username" name ="username" type ="text" value = "Username">
+            </form>    
+          <form method="POST" action="/login">
+            <input id ="email" name ="email" type ="email" value = "Email">
             <button type="submit">Sign In</button>
-         <% } %>
         </form>
       </div.b>
     </div.b>
