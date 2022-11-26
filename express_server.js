@@ -22,6 +22,14 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = { urls: urlDatabase , username: req.cookies["username"],};
+  res.render("register", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  res.redirect("/urls"); 
+});
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
