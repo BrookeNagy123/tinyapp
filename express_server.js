@@ -18,6 +18,11 @@ const users = {
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
   },
+  user2ID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "purple2-monkey-dinosaur",
+  },
 };
 
 function generateRandomString() {
@@ -25,6 +30,19 @@ function generateRandomString() {
   return result;
 }
 
+function isEmailInUse(email) {
+  let emails = [];
+  Object.values(users).forEach(val => {
+    emails.push(val.email);
+  })
+    for(let i = 0; i < emails.length; i ++){
+      if(emails[i] === email){
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -36,11 +54,35 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const id = generateRandomString();
+  if(req.body.email === ""){
+    res.status(400);
+    res.send("Please enter a valid email address");
+  } else if(isEmailInUse(req.body.email) === true){
+    res.status(400);
+    res.send("Email address already in use");
+  } else {
+    const id = generateRandomString();
+    const email = req.body.email;
+    const password = req.body.password;
+    users[id] = {id, email, password}
+    res.cookie("user_id", id);
+    res.redirect("/urls"); 
+  }
+});
+
+app.get("/login", (req, res) => {
+  const templateVars = { users: users};
+  res.render("login", templateVars);
+}); 
+
+app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  users[id] = {id, email, password}
-  res.cookie("user_id", id);
+    res.redirect("/urls"); 
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
   res.redirect("/urls"); 
 });
 
@@ -50,17 +92,7 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase , users: users};
-  console.log(templateVars)
   res.render("urls_index", templateVars);
-});
-
-app.post("/login", (req, res) => {
-  res.redirect("/urls"); 
-});
-
-app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
-  res.redirect("/urls"); 
 });
 
 app.get("/urls/new", (req, res) => {
