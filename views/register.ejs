@@ -22,7 +22,7 @@
     <%- include('_header') %>
 
     <main style="margin: 1em;">
-      <h3>Register</h3>
+      <h3>Create Account</h3>
       <form class="form-inline" action="/register" method="POST">
         <div class="form-group mb-2">
           <table class="table">
@@ -34,15 +34,17 @@
                     <input
                     type="email"
                     name="email"
+                    placeholder="Enter Email"
                     />
                    <label for=" Password">Password</label>
                    <input
                    type="password"
                    name="password"
+                   placeholder="Password"
                     />
                     </td>
                     <td>
-                  <button type="submit">Submit</button>
+                  <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
                     </td>
                 </td>
