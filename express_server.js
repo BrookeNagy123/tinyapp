@@ -1,5 +1,6 @@
 const express = require("express");
 let cookieParser = require('cookie-parser');
+const bcrypt = require("bcryptjs");
 const app = express();
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
@@ -17,12 +18,14 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    hashedPassword: "$2a$10$MrIpvUfqCkGlX63JL3m7GeUdzI4apGC10wykzlvhEawwNPDcwGPjG",
+    //Password: purple-monkey-dinosaur
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "purple2-monkey-dinosaur",
+    hashedPassword: "$2a$10$ymxHl1dozarYZtwVFUD.AegeR7XUZ5xBQ4nfSqAjQxyS5X2UrGc/O",
+     //Password: purple2-monkey-dinosaur
   },
 };
 
@@ -48,20 +51,16 @@ function isEmailInUse(email) {
   }
 }
   
-function emailAndPasswordMatch(email, password) {
+function getUserByEmail(users, email){
   let answer;
-  Object.values(users).map(value => {
-    if (value.email === email) {
-      let correctUser = value;
-      if (correctUser.password === password) {
-        answer = true;
-      } else {
-        answer = false;
-      }
+  Object.values(users).forEach(user => {
+    if(user.email === email){
+      answer = user
     }
   });
   return answer;
 }
+console.log(getUserByEmail(users, "test"));
 
 function getID(email) {
   let id;
@@ -83,7 +82,11 @@ app.get("/register", (req, res) => {
   const cookieID = req.cookies.user_id;
   const user = users[cookieID];
   const templateVars = { urls: urlDatabase , user};
+  if(cookieID){
+    res.redirect("/urls");
+  } else {
   res.render("register", templateVars);
+  }
 });
 
 app.post("/register", (req, res) => {
@@ -95,7 +98,9 @@ app.post("/register", (req, res) => {
     const id = generateRandomString();
     const email = req.body.email;
     const password = req.body.password;
-    users[id] = {id, email, password};
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    users[id] = {id, email, hashedPassword};
+    console.log(users);
     res.cookie("user_id", id);
     res.redirect("/urls");
   }
@@ -106,11 +111,16 @@ app.get("/login", (req, res) => {
   const cookieID = req.cookies.user_id;
   const user = users[cookieID];
   const templateVars = { user };
+  if(cookieID){
+    res.redirect("/urls");
+  } else {
   res.render("login", templateVars);
+  }
 });
 
 app.post("/login", (req, res) => {
-  if (emailAndPasswordMatch(req.body.email,req.body.password) === true) {
+  const user = getUserByEmail(users, req.body.email)
+  if(bcrypt.compareSync(req.body.password, user.hashedPassword)) {
     const id = getID(req.body.email);
     res.cookie("user_id", id);
     res.redirect("/urls");
@@ -139,13 +149,23 @@ app.get("/urls/new", (req, res) => {
   const cookieID = req.cookies.user_id;
   const user = users[cookieID];
   const templateVars = {user};
-  res.render("urls_new", templateVars);
+  if(cookieID){
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.post("/urls", (req, res) => {
-  let newID = generateRandomString();
-  urlDatabase[newID] = req.body.longURL;
-  res.redirect("/urls/" + newID);
+    // const cookieID = req.cookies.user_id;
+    // if(cookieID){
+    let newID = generateRandomString();
+    urlDatabase[newID] = req.body.longURL;
+    res.redirect("/urls/" + newID);
+    res.render("urls_new", templateVars);
+  // } else {
+  //   res.send("Login or Register to create new short URLs");
+  // }
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -156,8 +176,12 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
+  //if() {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
+ // else {
+  //res.send("ID not found")
+ // }
 });
 
 app.post("/urls/:id/delete", (req, res) => {
