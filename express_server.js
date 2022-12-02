@@ -17,6 +17,8 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
+
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -39,6 +41,15 @@ function generateRandomString() {
   return result;
 }
 
+function idCompare(id){
+  let answer;
+  Object.keys(urlDatabase).forEach(key => {
+    if(key === id){
+      answer = true
+    } 
+  })
+  return answer;
+}
 
 function isEmailInUse(email) {
   let emails = [];
@@ -158,15 +169,17 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-    // const cookieID = req.cookies.user_id;
-    // if(cookieID){
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+  const templateVars = {user};
+  if(user_id){
     let newID = generateRandomString();
     urlDatabase[newID] = req.body.longURL;
     res.redirect("/urls/" + newID);
     res.render("urls_new", templateVars);
-  // } else {
-  //   res.send("Login or Register to create new short URLs");
-  // }
+  } else {
+    res.send("Login or Register to create new short URLs");
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -177,12 +190,12 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  //if() {
+  if(idCompare(req.params.id) === true) {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
- // else {
-  //res.send("ID not found")
- // }
+  } else {
+  res.send("URL not found")
+  }
 });
 
 app.post("/urls/:id/delete", (req, res) => {
