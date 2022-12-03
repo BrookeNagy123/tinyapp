@@ -16,6 +16,10 @@
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
+        <% if(!user) { %>
+          <h5 class="card-title">Please Login or Register</a> </h5>  
+          <% } %>  
+          <% if(user) { %> 
         <h5 class="card-title">TinyURL for: <%= longURL %> </a> </h5>
         <p class="card-text">
           Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
@@ -30,6 +34,7 @@
             <input id ="url" name ="url" type="text" value = "<%= longURL %>">
             <button type="submit" class="btn btn-primary" >Submit</button>
           </form>
+          <% } %>
         </p>
       </div>
     </div>
