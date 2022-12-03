@@ -1,23 +1,30 @@
+//Setup for express_server.js
+
 const express = require("express");
-let cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session')
+const getUserByEmail = require('./helpers');
 const bcrypt = require("bcryptjs");
 const app = express();
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1']
+  keys: ['key1', 'key2']
 }));
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-const PORT = 8080; // default port 8080
+const PORT = 8080; 
 
-//URL Database and User Object Below 
+//URL Database and Users Object 
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+  longURL:"http://www.lighthouselabs.ca",
+  userID:"userRandomID",
+  },
+  "9sm5xK": {
+  longURL:"http://www.google.com",
+  userID:"user2RandomID"
+  },
 };
-
-
 
 const users = {
   userRandomID: {
@@ -34,7 +41,7 @@ const users = {
   },
 };
 
-// Helper Functions Below 
+// Helper Functions
 
 function generateRandomString() {
   const result = Math.random().toString(36).substring(2,8);
@@ -51,30 +58,6 @@ function idCompare(id){
   return answer;
 }
 
-function isEmailInUse(email) {
-  let emails = [];
-  Object.values(users).forEach(val => {
-    emails.push(val.email);
-  });
-  for (let i = 0; i < emails.length; i ++) {
-    if (emails[i] === email) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-}
-  
-function getUserByEmail(users, email){
-  let answer;
-  Object.values(users).forEach(user => {
-    if(user.email === email){
-      answer = user
-    }
-  });
-  return answer;
-}
-
 function getID(email) {
   let id;
   Object.values(users).map(value => {
@@ -85,7 +68,19 @@ function getID(email) {
   return id;
 }
 
-// GET and POST Routes Below 
+function urlsForUser(id){
+  let answer = {};
+  Object.keys(urlDatabase).forEach(key => {
+    if(urlDatabase[key].userID === id){
+     answer[key] = urlDatabase[key];
+    }
+  })
+  return answer;
+}
+
+
+
+// GET and POST Routes 
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -103,9 +98,10 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  const user = getUserByEmail(users, req.body.email)
   if (req.body.email === "") {
     return res.status(400).send("Please provide a valid email");
-  } else if (isEmailInUse(req.body.email) === true) {
+  } else if (user) {
     return res.status(400).send("Email address already in use");
   } else {
     const id = generateRandomString();
@@ -153,15 +149,17 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const user_id = req.session.user_id;
   const user = users[user_id];
-  const templateVars = { urls: urlDatabase , user};
+  const url = urlsForUser(user_id)
+  const templateVars = {urls: url, user};
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   const user_id = req.session.user_id;
   const user = users[user_id];
-  const templateVars = {user};
-  if(user_id){
+  const url = urlsForUser(user_id)
+  const templateVars = {urls: url, user};
+  if(user){
     res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
@@ -171,10 +169,13 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   const user_id = req.session.user_id;
   const user = users[user_id];
-  const templateVars = {user};
-  if(user_id){
+  const url = urlsForUser(user_id)
+  const templateVars = {urls: url, user};
+  if(user){
     let newID = generateRandomString();
-    urlDatabase[newID] = req.body.longURL;
+    urlDatabase[newID] = {longURL: req.body.longURL, userID: user_id};
+    console.log(urlDatabase)
+    console.log(users)
     res.redirect("/urls/" + newID);
     res.render("urls_new", templateVars);
   } else {
@@ -185,29 +186,58 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const user_id = req.session.user_id;
   const user = users[user_id];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user};
+  const url = urlsForUser(user_id)
+  if(idCompare(req.params.id) === true) {
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user};
   res.render("urls_show", templateVars);
+  } else {
+    res.send("ID Not Found")
+  }
 });
 
 app.get("/u/:id", (req, res) => {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+  const url = urlsForUser(user_id)
   if(idCompare(req.params.id) === true) {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   res.redirect(longURL);
   } else {
-  res.send("URL not found")
+  res.send("URL Not Found")
   }
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+  const url = req.params.id
+  if(idCompare(req.params.id) === true) {
+    if(user_id === urlDatabase[url].userID){
+      delete urlDatabase[req.params.id];
+      res.redirect("/urls");
+    } else {
+      res.send("Please login to delete")
+    }
+  } else {
+    res.send("ID Not Found")
+  }
 });
 
 app.post("/urls/:id", (req, res) => {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
   const id = req.params.id;
   const longURL = req.body.url;
-  urlDatabase[id] = longURL;
-  res.redirect("/urls");
+  if(idCompare(req.params.id) === true) {
+    if(user_id === urlDatabase[id].userID){
+      urlDatabase[id].longURL = longURL;
+      res.redirect("/urls");
+    } else {
+      res.send("Please login to edit")
+    }
+  } else {
+    res.send("ID Not Found")
+  }
 });
 
 app.listen(PORT, () => {
