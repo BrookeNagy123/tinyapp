@@ -20,6 +20,9 @@
   <body>
     <%- include('_header'); %>
     <main style="margin: 1em;">
+      <% if(!user) { %>
+        <h4 class="Message"> Please Login or Register to view URLs </h4>
+          <% } %>  
       <h3>My URLs</h3>
       <table class="table">
         <thead>
@@ -30,11 +33,12 @@
             <th scope="col">Delete</th>
           </tr>
         </thead>
-        <tbody>
-          <% for (let id in urls) { %>
+        <tbody> 
+          <% if(user) { %> 
+          <% for (let id in urls) { %> 
             <tr>
               <td><%= id %></td> 
-              <td><%= urls[id] %></td>
+              <td><%= urls[id].longURL %></td>
               <td>
                 <form method="GET" action="/urls/<%= id %>">
                 <button type="submit" style="border-color:blue;background-color: whitesmoke";>Edit</button>
@@ -47,6 +51,7 @@
             </td>
             </tr>
           <% } %>
+          <% } %>   
         </tbody>
       </table>
     </main>
