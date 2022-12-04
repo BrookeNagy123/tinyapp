@@ -103,9 +103,9 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const user = getUserByEmail(users, req.body.email);
   if (req.body.email === "") {
-    return res.status(400).send("Please provide a valid email");
+    return res.status(400).send("Please provide a valid email address.");
   } else if (user) {
-    return res.status(400).send("Email address already in use");
+    return res.status(400).send("Email address already in use, please use another email address.");
   } else {
     const id = generateRandomString();
     const email = req.body.email;
@@ -136,7 +136,7 @@ app.post("/login", (req, res) => {
     req.session.user_id = id;
     res.redirect("/urls");
   } else {
-    res.status(403).send("Please try again with the correct email and password");
+    res.status(403).send("Please try again with the correct email and password.");
   }
 });
 
@@ -176,7 +176,7 @@ app.post("/urls", (req, res) => {
     urlDatabase[newID] = {longURL: req.body.longURL, userID: userID};
     res.redirect("/urls/" + newID);
   } else {
-    res.send("Login or Register to Create New Short URLs");
+    res.send("Login or Register to Create New Short URLs.");
   }
 });
 
@@ -189,7 +189,7 @@ app.get("/urls/:id", (req, res) => {
       const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user};
       res.render("urls_show", templateVars);
     } else {
-      res.send("Please login to view");
+      res.send("Please login to view.");
     }
   } else {
     res.send("ID Not Found");
@@ -213,7 +213,7 @@ app.post("/urls/:id/delete", (req, res) => {
       delete urlDatabase[req.params.id];
       res.redirect("/urls");
     } else {
-      res.send("Please login to delete");
+      res.send("Please login to delete.");
     }
   } else {
     res.send("ID Not Found");
@@ -229,7 +229,7 @@ app.post("/urls/:id", (req, res) => {
       urlDatabase[id].longURL = longURL;
       res.redirect("/urls");
     } else {
-      res.send("Please login to edit");
+      res.send("Please login to edit.");
     }
   } else {
     res.send("ID Not Found");
