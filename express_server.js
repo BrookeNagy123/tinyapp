@@ -81,7 +81,12 @@ function urlsForUser(id) {
 // GET and POST Routes
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const userID = req.session.user_id;
+  if (userID) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/register", (req, res) => {
@@ -166,25 +171,26 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const userID = req.session.user_id;
-  const user = users[userID];
-  const url = urlsForUser(userID);
-  const templateVars = {urls: url, user};
   if (userID) {
     let newID = generateRandomString();
     urlDatabase[newID] = {longURL: req.body.longURL, userID: userID};
     res.redirect("/urls/" + newID);
-    res.render("urls_new", templateVars);
   } else {
-    res.send("Login or Register to create new short URLs");
+    res.send("Login or Register to Create New Short URLs");
   }
 });
 
 app.get("/urls/:id", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
+  const id = req.params.id;
   if (idCompare(req.params.id) === true) {
-    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user};
-    res.render("urls_show", templateVars);
+    if (userID === urlDatabase[id].userID) {
+      const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user};
+      res.render("urls_show", templateVars);
+    } else {
+      res.send("Please login to view");
+    }
   } else {
     res.send("ID Not Found");
   }
