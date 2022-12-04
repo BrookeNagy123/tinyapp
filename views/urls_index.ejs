@@ -21,8 +21,9 @@
     <%- include('_header'); %>
     <main style="margin: 1em;">
       <% if(!user) { %>
-        <h4 class="Message"> Please Login or Register to view URLs </h4>
+        <h4 class="Message"> Please Login or Register to View URLs </h4>
           <% } %>  
+          <% if(user) { %>     
       <h3>My URLs</h3>
       <table class="table">
         <thead>
@@ -34,7 +35,6 @@
           </tr>
         </thead>
         <tbody> 
-          <% if(user) { %> 
           <% for (let id in urls) { %> 
             <tr>
               <td><%= id %></td> 
